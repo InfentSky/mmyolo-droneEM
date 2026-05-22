@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# Modified by: InfantSky
+
 from projects.easydeploy.model import ORTWrapper, TRTWrapper  # isort:skip
 import os
 import random
@@ -113,6 +115,13 @@ def main():
 
         # Get candidate predict info by num_dets
         num_dets, bboxes, scores, labels = result
+#---------------------------------------------------
+        print(f"\n--- 调试信息 ---")
+        print(f"检测到的目标数量 (num_dets): {num_dets.item()}")
+        if num_dets.item() > 0:
+            print(f"最高置信度 (Max Score): {scores[0][:num_dets].max().item():.4f}")
+            print(f"预测的类别标签: {labels[0][:num_dets].cpu().numpy()}")
+#---------------------------------------------------
         scores = scores[0, :num_dets]
         bboxes = bboxes[0, :num_dets]
         labels = labels[0, :num_dets]
@@ -138,8 +147,8 @@ def main():
                 bgr,
                 name, (bbox[0], bbox[1] - 2),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                2.0, [225, 255, 255],
-                thickness=3)
+                0.8, [225, 255, 255],
+                thickness=1)
 
         if args.show:
             mmcv.imshow(bgr, 'result', 0)

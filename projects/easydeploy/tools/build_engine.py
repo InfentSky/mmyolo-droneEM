@@ -110,7 +110,7 @@ def parse_args():
     parser.add_argument(
         '--scales',
         type=str,
-        default='[[1,3,640,640],[1,3,640,640],[1,3,640,640]]',
+        default='[[1,3,640,640],[1,3,960,960],[1,3,960,960]]',
         help='Input scales for build dynamic input shape engine')
     parser.add_argument(
         '--fp16', action='store_true', help='Build model with fp16 mode')

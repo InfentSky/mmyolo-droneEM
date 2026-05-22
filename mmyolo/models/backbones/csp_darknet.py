@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# From: "developer" <developer@dji.com>
+# Date: Thu, 17 Oct 2024 16:55:38 +0800
+
 from typing import List, Tuple, Union
 
 import torch
@@ -281,7 +284,7 @@ class YOLOv8CSPDarknet(BaseBackbone):
             spp = SPPFBottleneck(
                 out_channels,
                 out_channels,
-                kernel_sizes=5,
+                kernel_sizes=3,
                 norm_cfg=self.norm_cfg,
                 act_cfg=self.act_cfg)
             stage.append(spp)

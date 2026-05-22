@@ -1,8 +1,12 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+# From: "developer" <developer@dji.com>
+# Date: Thu, 17 Oct 2024 16:55:38 +0800
+
 _base_ = ['../_base_/default_runtime.py', '../_base_/det_p5_tta.py']
 
 # ========================Frequently modified parameters======================
 # -----data related-----
-data_root = 'data/coco/'  # Root path of data
+data_root = '/mlcdev/nnsdk/data/coco/'  # Root path of data
 # Path of train annotation file
 train_ann_file = 'annotations/instances_train2017.json'
 train_data_prefix = 'train2017/'  # Prefix of train image path
@@ -23,13 +27,13 @@ persistent_workers = True
 base_lr = 0.01
 max_epochs = 500  # Maximum training epochs
 # Disable mosaic augmentation for final 10 epochs (stage 2)
-close_mosaic_epochs = 10
+close_mosaic_epochs = 40
 
 model_test_cfg = dict(
     # The config of multi-label for multi-class prediction.
     multi_label=True,
     # The number of boxes before NMS
-    nms_pre=30000,
+    nms_pre=2000,
     score_thr=0.001,  # Threshold to filter out boxes.
     nms=dict(type='nms', iou_threshold=0.7),  # NMS type and threshold
     max_per_img=300)  # Max number of detections of each image
@@ -99,8 +103,8 @@ model = dict(
     type='YOLODetector',
     data_preprocessor=dict(
         type='YOLOv5DetDataPreprocessor',
-        mean=[0., 0., 0.],
-        std=[255., 255., 255.],
+        mean=[128., 128., 128.],
+        std=[128., 128., 128.],
         bgr_to_rgb=True),
     backbone=dict(
         type='YOLOv8CSPDarknet',
@@ -109,7 +113,7 @@ model = dict(
         deepen_factor=deepen_factor,
         widen_factor=widen_factor,
         norm_cfg=norm_cfg,
-        act_cfg=dict(type='SiLU', inplace=True)),
+        act_cfg=dict(type='ReLU', inplace=True)),
     neck=dict(
         type='YOLOv8PAFPN',
         deepen_factor=deepen_factor,
@@ -118,7 +122,7 @@ model = dict(
         out_channels=[256, 512, last_stage_out_channels],
         num_csp_blocks=3,
         norm_cfg=norm_cfg,
-        act_cfg=dict(type='SiLU', inplace=True)),
+        act_cfg=dict(type='ReLU', inplace=True)),
     bbox_head=dict(
         type='YOLOv8Head',
         head_module=dict(
@@ -128,7 +132,7 @@ model = dict(
             widen_factor=widen_factor,
             reg_max=16,
             norm_cfg=norm_cfg,
-            act_cfg=dict(type='SiLU', inplace=True),
+            act_cfg=dict(type='ReLU', inplace=True),
             featmap_strides=strides),
         prior_generator=dict(
             type='mmdet.MlvlPointGenerator', offset=0.5, strides=strides),

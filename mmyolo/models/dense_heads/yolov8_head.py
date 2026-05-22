@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# From: "developer" <developer@dji.com>
+# Date: Thu, 17 Oct 2024 16:55:38 +0800
 import math
 from typing import List, Sequence, Tuple, Union
 
@@ -54,7 +56,8 @@ class YOLOv8HeadModule(BaseModule):
                  norm_cfg: ConfigType = dict(
                      type='BN', momentum=0.03, eps=0.001),
                  act_cfg: ConfigType = dict(type='SiLU', inplace=True),
-                 init_cfg: OptMultiConfig = None):
+                 init_cfg: OptMultiConfig = None,
+                 skip_dfl: bool = False):
         super().__init__(init_cfg=init_cfg)
         self.num_classes = num_classes
         self.featmap_strides = featmap_strides
@@ -64,6 +67,7 @@ class YOLOv8HeadModule(BaseModule):
         self.act_cfg = act_cfg
         self.in_channels = in_channels
         self.reg_max = reg_max
+        self.skip_dfl = skip_dfl
 
         in_channels = []
         for channel in self.in_channels:
@@ -162,7 +166,7 @@ class YOLOv8HeadModule(BaseModule):
         b, _, h, w = x.shape
         cls_logit = cls_pred(x)
         bbox_dist_preds = reg_pred(x)
-        if self.reg_max > 1:
+        if self.reg_max > 1 and not self.skip_dfl:
             bbox_dist_preds = bbox_dist_preds.reshape(
                 [-1, 4, self.reg_max, h * w]).permute(0, 3, 1, 2)
 

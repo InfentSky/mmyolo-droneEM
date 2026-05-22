@@ -11,7 +11,7 @@ anchors = [
     [(353, 337), (539, 341), (443, 432)]  # P5/32
 ]
 
-max_epochs = 40
+max_epochs = 60
 train_batch_size_per_gpu = 12
 train_num_workers = 4
 

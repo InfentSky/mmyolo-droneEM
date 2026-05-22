@@ -1,10 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# From: "developer" <developer@dji.com>
+# Date: Thu, 17 Oct 2024 16:55:38 +0800
 from typing import List, Union
 
 import torch.nn as nn
 from mmdet.utils import ConfigType, OptMultiConfig
 
 from mmyolo.registry import MODELS
+from mmyolo.utils.deconv_upsampling import NearestConvTranspose2d
 from .. import CSPLayerWithTwoConv
 from ..utils import make_divisible, make_round
 from .yolov5_pafpn import YOLOv5PAFPN
@@ -52,6 +55,12 @@ class YOLOv8PAFPN(YOLOv5PAFPN):
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
             init_cfg=init_cfg)
+
+        self.upsample_channels = [make_divisible(channel, self.widen_factor) for channel in self.in_channels[:0:-1]]
+        self.upsample_layers = nn.ModuleList()
+        for idx in range(len(self.upsample_channels)):
+            upp = NearestConvTranspose2d(self.upsample_channels[idx], scale_factor=2, with_groups=True)
+            self.upsample_layers.append(upp)
 
     def build_reduce_layer(self, idx: int) -> nn.Module:
         """build reduce layer.
