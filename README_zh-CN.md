@@ -69,10 +69,78 @@ English | [简体中文](README_zh-CN.md)
 ---
 
 ## 🧩 主要修改内容
-……
+
+以下是对原版 MMYOLO 的主要修改项：
+
+### 1. 数据预处理参数调整
+
+- **文件**：`configs/yolov8/yolov8_s_syncbn_fast_8xb16-500e_coco.py`
+- **修改内容**：将数据预处理的 `mean/std` 从 `[0., 0., 0.] / [255., 255., 255.]` 调整为 `[128., 128., 128.] / [128., 128., 128.]`
+- **目的**：适配特定场景下的数据归一化需求，将输入像素值映射至 `[-1, 1]` 范围，加速模型收敛
+
+### 2. 激活函数替换（SiLU → ReLU）
+
+- **文件**：`configs/yolov8/yolov8_s_syncbn_fast_8xb16-500e_coco.py`
+- **修改内容**：将 backbone 中的激活函数从 `SiLU`（默认）替换为 `ReLU`（`inplace=True`）
+- **目的**：降低计算复杂度与推理延迟，ReLU 在边缘计算设备上具有更好的部署友好性
+
+### 3. 新增反卷积上采样模块（DeconvUpsampling）
+
+- **新增文件**：`mmyolo/utils/deconv_upsampling.py`
+- **功能**：实现了基于转置卷积（Deconvolution / Transposed Convolution）的上采样模块，替代原始的最近邻插值或双线性插值上采样方式
+- **目的**：通过学习式上采样提升对小目标的检测能力，增强特征金字塔的特征表示质量
+
+### 4. YOLOv8 结构改进
+
+- **修改文件**：
+  - `mmyolo/models/backbones/csp_darknet.py` — backbone 结构调整
+  - `mmyolo/models/necks/yolov8_pafpn.py` — neck 特征融合路径优化
+  - `mmyolo/models/dense_heads/yolov8_head.py` — 检测头适配改进
+  - `mmyolo/models/layers/yolo_bricks.py` — 基础构建块（bricks）扩展
+- **目的**：协同反卷积上采样模块，构建更有效的特征提取与融合链路
+
+### 5. 训练脚本增强
+
+- **文件**：`tools/train.py`
+- **修改内容**：在训练脚本中集成新的反卷积上采样模块注册机制，确保自定义层可被 MMEngine 正确识别与序列化
+
+### 6. 数据集路径适配
+
+- **文件**：`configs/yolov8/yolov8_s_syncbn_fast_8xb16-500e_coco.py`
+- **修改内容**：将 `data_root` 修改为自定义路径 `/mlcdev/nnsdk/data/coco/`
+- **目的**：适配特定计算环境下的数据集存储路径
+
+---
 
 ## 🛠️ 快速开始
-……
+
+### 环境安装
+
+```bash
+# 创建虚拟环境
+conda create -n mmyolo python=3.8 -y
+conda activate mmyolo
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 安装 mmyolo
+pip install -v -e .
+```
+
+### 训练
+
+```bash
+python tools/train.py configs/yolov8/yolov8_s_syncbn_fast_8xb16-500e_coco.py
+```
+
+### 测试
+
+```bash
+python tools/test.py configs/yolov8/yolov8_s_syncbn_fast_8xb16-500e_coco.py work_dirs/yolov8_s_xxx/epoch_xxx.pth --show
+```
+
+---
 
 ## 📄 许可证
 
